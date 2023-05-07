@@ -10,12 +10,13 @@ export class Users {
 		// crypto.SHA('hello my friend').then(x => console.log('crypto:', x))
 		// console.log('crypto',pw)
 		let auth = request.headers.get('Authorization')
-		// console.log('auth', auth)
+		// console.log('auth header', auth)
 		if (!auth?.toLowerCase()?.startsWith('basic ')) return
 		auth = auth.slice(6)
 		// console.log('auth2', auth)
 		let [user, pass] = atob(auth).split(':')
 		// console.log('auth3', user, '--', pass)
+		// if (user == 'NULL') return null
 		if (this.USERS[user] == pass) return user
 		if (this.USERS[user] == await crypto.SHA(pass)) return user
 	}

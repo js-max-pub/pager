@@ -5,8 +5,9 @@ import { Routes } from './routes.js'
 import { Users } from './users.js'
 // serve(handler, { port: 8000 })
 import { notFound } from "./response.js";
-export * as response from './response.js'
-import { Log } from '../../log/mod.js'
+// import { Log } from '../../log/mod.js'
+import { Log } from 'https://jsv.max.pub/@js-max-pub/log/2022/mod.js'
+
 let log = new Log('pager')
 
 // let priv = Deno.readTextFileSync('private.pem')
@@ -24,17 +25,33 @@ export class Pager {
 		// serveTls(x => this.request(x), { port, certFile: './certificate.pem', keyFile:'./key.pem'});
 	}
 	async request(request) {
+		// console.log('request', request.url)
 		// console.log('routes', this.routes)
 		let route = this.routes.find(request)
 		// console.log()
 		if (!route) return notFound()
 		let USER = await this.users.find(request)
 		let queryString = Object.fromEntries(new URLSearchParams(new URL(request.url).search))
+		let HEAD = Object.fromEntries(request.headers)
+		let FORM
+		if(HEAD['content-type'] == 'application/x-www-form-urlencoded'){
+			FORM = await request.formData()
+			FORM = Object.fromEntries(FORM)
+			// console.log("ENTRIES",Object.fromEntries(FORM))
+		}
+		// console.log("req",request)
+		// console.log("form",request.formData)
+		// const body = await request.body({ type: 'form-data'})
+		// const data = await body.value.read()
+		// console.log(data)
+		// let FORM = await request.request.formData()
+		// console.log("FORM",FORM)
+		// console.log('headers', headers)
 		// let formData = request.formData() // https://developer.mozilla.org/en-US/docs/Web/API/Request/formData
 		log.info(request.url, '->', route.route, '->', `${route.function.name}(@${USER}, ${JSON.stringify(route.path)}, ${JSON.stringify(queryString)})`)
 		// console.log('qs', queryString)
 		// if (!USER) return unauthorized()
-		return await route.function({ ...route.path, ...queryString, USER })
+		return await route.function({ ...route.path, ...queryString, USER, HEAD, FORM, request })
 		// return new Response("Hello World\n")
 
 	}
